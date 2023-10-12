@@ -17,3 +17,15 @@ def create_town(db: Session, town: app.schemas.TownCreate):
     db.commit()
     db.refresh(db_town)
     return db_town
+
+
+def get_town_stops(db: Session, town_id: int):
+    return db.query(app.models.Stop).filter(app.models.Stop.town_id == town_id).all()
+
+
+def create_stop(db: Session, stop: app.schemas.StopCreate, town_id: int):
+    db_stop = app.models.Stop(**stop.model_dump(), town_id=town_id)
+    db.add(db_stop)
+    db.commit()
+    db.refresh(db_stop)
+    return db_stop
