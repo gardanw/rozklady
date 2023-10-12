@@ -33,7 +33,10 @@ def create_stop(db: Session, stop: app.schemas.StopCreate, town_id: int):
 
 
 def get_buslien(db: Session, busline_id: int):
-    return db.query(app.models.Busline).filter(app.models.Busline.id == busline_id).first()
+    return (
+        db.query(app.models.Busline).filter(app.models.Busline.id == busline_id).first()
+    )
+
 
 def create_busline(db: Session, busline: app.schemas.BuslineCreate):
     db_busline = app.models.Busline(**busline.model_dump())
@@ -41,3 +44,27 @@ def create_busline(db: Session, busline: app.schemas.BuslineCreate):
     db.commit()
     db.refresh(db_busline)
     return db_busline
+
+
+def create_run(db: Session, run: app.schemas.RunCreate, busline_id: int):
+    db_run = app.models.Run(**run.model_dump(), busline_id=busline_id)
+    db.add(db_run)
+    db.commit()
+    db.refresh(db_run)
+    return db_run
+
+
+def create_run_stop(db: Session, run_stop: app.schemas.RunStopCreate, run_id: int):
+    db_run_stop = app.models.RunStop(**run_stop.model_dump(), run_id=run_id)
+    db.add(db_run_stop)
+    db.commit()
+    db.refresh(db_run_stop)
+    return db_run_stop
+
+
+def get_run(db: Session, run_id: int):
+    return db.query(app.models.Run).filter(app.models.Run.id == run_id).first()
+
+
+def get_stop(db: Session, stop_id: int):
+    return db.query(app.models.Stop).filter(app.models.Stop.id == stop_id)

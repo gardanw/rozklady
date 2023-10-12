@@ -45,3 +45,39 @@ async def read_town_stops(town_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Town not found")
     stops = crud.get_town_stops(db=db, town_id=town_id)
     return stops
+
+
+@router.post("/buslines/", response_model=app.schemas.Busline)
+async def create_busline(
+    busline: app.schemas.BuslineCreate, db: Session = Depends(get_db)
+):
+    return crud.create_busline(db=db, busline=busline)
+
+
+@router.post("/buslines/{busline_id}/runs/", response_model=app.schemas.Run)
+async def create_run(
+    busline_id: int, run: app.schemas.RunCreate, db: Session = Depends(get_db)
+):
+    db_busline = crud.get_buslien(db=db, busline_id=busline_id)
+    if db_busline is None:
+        raise HTTPException(status_code=404, detail="Busline not found")
+    return crud.create_run(db=db, run=run, busline_id=busline_id)
+
+
+@router.post("/buslines/{busline_id}/runs/{run_id}", response_model=app.schemas.RunStop)
+async def create_run(
+    busline_id: int,
+    run_id: int,
+    run_stop: app.schemas.RunStopCreate,
+    db: Session = Depends(get_db),
+):
+    db_busline = crud.get_buslien(db=db, busline_id=busline_id)
+    if db_busline is None:
+        raise HTTPException(status_code=404, detail="Busline not found")
+    db_run = crud.get_run(db=db, run_id=run_id)
+    if db_run is None:
+        raise HTTPException(status_code=404, detail="Run not found")
+    db_stop = crud.get_stop(db=db, stop_id=run_stop.stop_id)
+    if db_stop is None:
+        raise HTTPException(status_code=404, detail="Stop not found")
+    return crud.create_run_stop(db=db, run_stop=run_stop, run_id=run_id)
