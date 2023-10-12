@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 
-import app.models, app.schemas
+import app.models
+import app.schemas
 
 
 def get_town(db: Session, town_id: int):
@@ -29,3 +30,14 @@ def create_stop(db: Session, stop: app.schemas.StopCreate, town_id: int):
     db.commit()
     db.refresh(db_stop)
     return db_stop
+
+
+def get_buslien(db: Session, busline_id: int):
+    return db.query(app.models.Busline).filter(app.models.Busline.id == busline_id).first()
+
+def create_busline(db: Session, busline: app.schemas.BuslineCreate):
+    db_busline = app.models.Busline(**busline.model_dump())
+    db.add(db_busline)
+    db.commit()
+    db.refresh(db_busline)
+    return db_busline
