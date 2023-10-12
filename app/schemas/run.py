@@ -3,19 +3,19 @@ from pydantic import BaseModel
 from app.schemas.run_stop import RunStop
 
 
-class StopBase(BaseModel):
-    stop_name: str
+class RunBase(BaseModel):
+    descript: str
 
 
-class StopCreate(StopBase):
+class RunCreate(RunBase):
     pass
 
 
-class Stop(StopBase):
+class Run(RunBase):
     id: int
-    town_id: int
+    busline_id: int
     run_stops: list[RunStop] = []
 
 
-class StopInDB(Stop):
+class RunInDB(Run):
     pass

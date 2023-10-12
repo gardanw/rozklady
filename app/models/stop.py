@@ -11,3 +11,4 @@ class Stop(Base):
     town_id = Column(Integer, ForeignKey("towns.id"))
 
     town = relationship("Town", back_populates="stops")
+    run_stops = relationship("RunStop", back_populates="stop")
