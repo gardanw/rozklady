@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Time
 from sqlalchemy.orm import relationship
 
-from app.models import Base
+from app.database import Base
 
 
 class RunStop(Base):
