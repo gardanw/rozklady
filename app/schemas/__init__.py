@@ -1,1 +1,2 @@
-from app.schemas.town import Town, TownBase, TownCreate, TownInDB
+from app.schemas.town import *
+from app.schemas.stop import *
