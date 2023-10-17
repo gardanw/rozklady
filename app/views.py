@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, Request, HTTPException
+from fastapi import APIRouter, Depends, Request, HTTPException, Form
+from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app import crud
@@ -7,6 +8,7 @@ import app.schemas
 
 
 router = APIRouter()
+templates = Jinja2Templates(directory="app/templates")
 
 
 @router.post("/towns/", response_model=app.schemas.Town)
@@ -15,6 +17,14 @@ async def create_town(town: app.schemas.TownCreate, db: Session = Depends(get_db
     if db_town:
         raise HTTPException(status_code=400, detail="Town already registered")
     return crud.create_town(db=db, town=town)
+
+
+@router.get("/towns/")
+async def add_town_html(request: Request, db: Session = Depends(get_db)):
+    db_towns = crud.get_towns(db=db)
+    return templates.TemplateResponse(
+        "town.html", {"request": request, "towns": db_towns}
+    )
 
 
 @router.get("/towns/{town_id}", response_model=app.schemas.Town)

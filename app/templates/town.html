@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Towns</title>
+
+</head>
+<body>
+<div>
+    <h1>Dodaj nowe miasto</h1>
+    <form id="town-form">
+        <label for="town-name">Nazwa miasta:</label>
+        <input type="text" id="town-name" name="town_name" required>
+        <button type="submit">Dodaj miasto</button>
+    </form>
+    <script src="/static/add_town.js"></script>
+</div>
+<div id="town-list">
+    <h2>Lista miast:</h2>
+    <ul>
+        {% for town in towns %}
+        <li town-id="{{ town.id }}">{{ town.town_name }}</li>
+        {% endfor %}
+    </ul>
+    <div id="new-town" style="display: none">
+        <h2>Nowo dodane:</h2>
+        <ul id="new-town-list">
+
+        </ul>
+    </div>
+</div>
+</body>
+</html>

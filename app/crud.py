@@ -4,8 +4,18 @@ import app.models
 import app.schemas
 
 
+def save_in_db(db: Session, obj):
+    db.add(obj)
+    db.commit()
+    db.refresh(obj)
+
+
 def get_town(db: Session, town_id: int):
     return db.query(app.models.Town).filter(app.models.Town.id == town_id).first()
+
+
+def get_towns(db: Session):
+    return db.query(app.models.Town).all()
 
 
 def get_town_by_name(db: Session, name: str):
@@ -14,9 +24,7 @@ def get_town_by_name(db: Session, name: str):
 
 def create_town(db: Session, town: app.schemas.TownCreate):
     db_town = app.models.Town(town_name=town.town_name)
-    db.add(db_town)
-    db.commit()
-    db.refresh(db_town)
+    save_in_db(db=db, obj=db_town)
     return db_town
 
 
@@ -26,9 +34,7 @@ def get_town_stops(db: Session, town_id: int):
 
 def create_stop(db: Session, stop: app.schemas.StopCreate, town_id: int):
     db_stop = app.models.Stop(**stop.model_dump(), town_id=town_id)
-    db.add(db_stop)
-    db.commit()
-    db.refresh(db_stop)
+    save_in_db(db=db, obj=db_stop)
     return db_stop
 
 
@@ -40,25 +46,19 @@ def get_buslien(db: Session, busline_id: int):
 
 def create_busline(db: Session, busline: app.schemas.BuslineCreate):
     db_busline = app.models.Busline(**busline.model_dump())
-    db.add(db_busline)
-    db.commit()
-    db.refresh(db_busline)
+    save_in_db(db=db, obj=db_busline)
     return db_busline
 
 
 def create_run(db: Session, run: app.schemas.RunCreate, busline_id: int):
     db_run = app.models.Run(**run.model_dump(), busline_id=busline_id)
-    db.add(db_run)
-    db.commit()
-    db.refresh(db_run)
+    save_in_db(db=db, obj=db_run)
     return db_run
 
 
 def create_run_stop(db: Session, run_stop: app.schemas.RunStopCreate, run_id: int):
     db_run_stop = app.models.RunStop(**run_stop.model_dump(), run_id=run_id)
-    db.add(db_run_stop)
-    db.commit()
-    db.refresh(db_run_stop)
+    save_in_db(db=db, obj=db_run_stop)
     return db_run_stop
 
 
