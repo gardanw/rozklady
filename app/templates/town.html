@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pl">
 <head>
     <meta charset="UTF-8">
     <title>Towns</title>
-
+    <link rel="icon" href="{{ url_for('static', path='favicon.ico') }}" type="image/x-icon">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', path='town_list.css') }}">
 </head>
 <body>
 <div>
@@ -13,21 +14,25 @@
         <input type="text" id="town-name" name="town_name" required>
         <button type="submit">Dodaj miasto</button>
     </form>
-    <script src="/static/add_town.js"></script>
+    <script src="{{ url_for('static', path='add_town.js') }}"></script>
 </div>
-<div id="town-list">
+<div id="town-list" class="town-list">
     <h2>Lista miast:</h2>
-    <ul>
+    <ul class="town-ul">
         {% for town in towns %}
-        <li town-id="{{ town.id }}">{{ town.town_name }}</li>
+        <li town-id="{{ town.id }}">
+            <span class="town-name">{{ town.town_name }}</span>
+            <button type="button" class="edit" onclick="editTown('{{ town.id }}', '{{ town.town_name }}')">Edytuj</button>
+            <button type="button" class="delete" onclick="deleteTown('{{ town.id }}', '{{ town.town_name }}')">Usuń</button>
+        </li>
         {% endfor %}
     </ul>
-    <div id="new-town" style="display: none">
-        <h2>Nowo dodane:</h2>
-        <ul id="new-town-list">
-
-        </ul>
-    </div>
+    <script src="{{ url_for('static', path='del_town.js') }}"></script>
+    <script src="{{ url_for('static', path='edit_town.js') }}"></script>
+</div>
+<div id="new-town" class="town-list">
+    <h2>Nowo dodane:</h2>
+    <ul id="new-town-list" class="town-ul"></ul>
 </div>
 </body>
 </html>

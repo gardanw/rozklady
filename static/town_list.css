@@ -1,0 +1,7 @@
+.town-list {
+  display: block;
+}
+
+.town-list:has(> ul:empty) {
+  display: none;
+}

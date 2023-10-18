@@ -15,7 +15,25 @@ def get_town(db: Session, town_id: int):
 
 
 def get_towns(db: Session):
-    return db.query(app.models.Town).all()
+    return db.query(app.models.Town).order_by(app.models.Town.town_name).all()
+
+
+def del_town(db: Session, town_id: int):
+    town = db.query(app.models.Town).filter(app.models.Town.id == town_id).first()
+    if town:
+        db.delete(town)
+        db.commit()
+        return {"message": "Town delete successfully"}
+    return {"message": "Town not exist"}
+
+
+def update_town_name(db: Session, town_id: int, new_name: str):
+    town = db.query(app.models.Town).filter(app.models.Town.id == town_id).first()
+    if town:
+        town.town_name = new_name
+        db.commit()
+        return town
+    return None
 
 
 def get_town_by_name(db: Session, name: str):

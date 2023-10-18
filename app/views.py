@@ -28,8 +28,21 @@ async def add_town_html(request: Request, db: Session = Depends(get_db)):
 
 
 @router.get("/towns/{town_id}", response_model=app.schemas.Town)
-async def read_town(town_id, db: Session = Depends(get_db)):
+async def read_town(town_id: int, db: Session = Depends(get_db)):
     db_town = crud.get_town(db, town_id=town_id)
+    if db_town is None:
+        raise HTTPException(status_code=404, detail="Town not found")
+    return db_town
+
+
+@router.delete("/towns/{town_id}")
+async def del_town(town_id: int, db: Session = Depends(get_db)):
+    return crud.del_town(db, town_id=town_id)
+
+
+@router.put("/towns/", response_model=app.schemas.Town)
+async def edit_town_name(town: app.schemas.TownInDB, db: Session = Depends(get_db)):
+    db_town = crud.update_town_name(db, town_id=town.id, new_name=town.town_name)
     if db_town is None:
         raise HTTPException(status_code=404, detail="Town not found")
     return db_town
