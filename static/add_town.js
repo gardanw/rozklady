@@ -25,11 +25,11 @@ document.getElementById('town-form').addEventListener('submit', async (event) =>
 
         const newDelButton = document.createElement("button");
         newDelButton.textContent = "Usuń";
-        newDelButton.setAttribute("onclick", `deleteTown("${newTown.id}", "${newTown.town_name}")`);
+        newDelButton.setAttribute("onclick", `deleteTown("${newTown.id}")`);
         newDelButton.setAttribute("class", `delete`);
 
         const newEditButton = document.createElement("button");
-        newEditButton.setAttribute("onclick", `editTown("${newTown.id}", "${newTown.town_name}")`);
+        newEditButton.setAttribute("onclick", `editTown("${newTown.id}")`);
         newEditButton.setAttribute("class", `edit`);
         newEditButton.textContent = "Edytuj";
 

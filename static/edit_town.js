@@ -1,4 +1,4 @@
-function editTown(townId, townName) {
+function editTown(townId) {
     // Znajdź element <li> z nazwą miasta
     const townElement = document.querySelector(`[town-id="${townId}"]`);
 
@@ -12,7 +12,7 @@ function editTown(townId, townName) {
         editButton.style.display = 'none';
 
         const townNameInput = document.createElement('input');
-        townNameInput.value = townName;
+        townNameInput.value = townNameText.textContent;
         townElement.appendChild(townNameInput);
 
         // Pokaż przycisk "Zapisz"
@@ -29,10 +29,9 @@ function editTown(townId, townName) {
 
 function updateTownName(townId, updatedName) {
     // Wyślij zapytanie PUT do zmiany nazwy miasta
-    fetch(`/towns/`, {
+    fetch(`/towns/${townId}`, {
         method: 'PUT',
         body: JSON.stringify({
-            id: townId,
             town_name: updatedName,
         }),
         headers: {

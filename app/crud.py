@@ -10,40 +10,34 @@ def save_in_db(db: Session, obj):
     db.refresh(obj)
 
 
-def get_town(db: Session, town_id: int):
-    return db.query(app.models.Town).filter(app.models.Town.id == town_id).first()
-
-
-def get_towns(db: Session):
-    return db.query(app.models.Town).order_by(app.models.Town.town_name).all()
-
-
-def del_town(db: Session, town_id: int):
-    town = db.query(app.models.Town).filter(app.models.Town.id == town_id).first()
-    if town:
-        db.delete(town)
-        db.commit()
-        return {"message": "Town delete successfully"}
-    return {"message": "Town not exist"}
-
-
-def update_town_name(db: Session, town_id: int, new_name: str):
-    town = db.query(app.models.Town).filter(app.models.Town.id == town_id).first()
-    if town:
-        town.town_name = new_name
-        db.commit()
-        return town
-    return None
-
-
-def get_town_by_name(db: Session, name: str):
-    return db.query(app.models.Town).filter(app.models.Town.town_name == name).first()
-
-
-def create_town(db: Session, town: app.schemas.TownCreate):
+def create_town(db: Session, town: app.schemas.TownCreate) -> app.schemas.Town:
     db_town = app.models.Town(town_name=town.town_name)
     save_in_db(db=db, obj=db_town)
     return db_town
+
+
+def get_town(db: Session, town_id: int) -> app.schemas.TownInDB:
+    return db.query(app.models.Town).filter(app.models.Town.id == town_id).first()
+
+
+def get_town_by_name(db: Session, name: str) -> app.schemas.TownInDB:
+    return db.query(app.models.Town).filter(app.models.Town.town_name == name).first()
+
+
+def get_towns(db: Session) -> list[app.schemas.TownInDB]:
+    return db.query(app.models.Town).order_by(app.models.Town.town_name).all()
+
+
+def update_town_name(db: Session, town: app.schemas.TownInDB, new_name: str) -> app.schemas.TownInDB:
+    town.town_name = new_name
+    db.commit()
+    return town
+
+
+def del_town(db: Session, town: app.schemas.TownInDB) -> app.schemas.TownInDB:
+    db.delete(town)
+    db.commit()
+    return town
 
 
 def get_town_stops(db: Session, town_id: int):

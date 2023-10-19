@@ -23,29 +23,36 @@ async def create_town(town: app.schemas.TownCreate, db: Session = Depends(get_db
 async def add_town_html(request: Request, db: Session = Depends(get_db)):
     db_towns = crud.get_towns(db=db)
     return templates.TemplateResponse(
-        "town.html", {"request": request, "towns": db_towns}
+        "towns.html", {"request": request, "towns": db_towns}
     )
 
 
-@router.get("/towns/{town_id}", response_model=app.schemas.Town)
-async def read_town(town_id: int, db: Session = Depends(get_db)):
+@router.get("/towns/{town_id}")
+async def read_town(request: Request, town_id: int, db: Session = Depends(get_db)):
     db_town = crud.get_town(db, town_id=town_id)
     if db_town is None:
         raise HTTPException(status_code=404, detail="Town not found")
-    return db_town
+    return templates.TemplateResponse(
+        "town.html", {"request": request, "town": db_town}
+    )
 
 
-@router.delete("/towns/{town_id}")
+@router.delete("/towns/{town_id}", response_model=app.schemas.TownInDB)
 async def del_town(town_id: int, db: Session = Depends(get_db)):
-    return crud.del_town(db, town_id=town_id)
-
-
-@router.put("/towns/", response_model=app.schemas.Town)
-async def edit_town_name(town: app.schemas.TownInDB, db: Session = Depends(get_db)):
-    db_town = crud.update_town_name(db, town_id=town.id, new_name=town.town_name)
+    db_town = crud.get_town(db, town_id=town_id)
     if db_town is None:
         raise HTTPException(status_code=404, detail="Town not found")
-    return db_town
+    return crud.del_town(db, town=db_town)
+
+
+@router.put("/towns/{town_id}", response_model=app.schemas.TownInDB)
+async def edit_town_name(
+    town_id: int, town: app.schemas.TownBase, db: Session = Depends(get_db)
+):
+    db_town = crud.get_town(db, town_id=town_id)
+    if db_town is None:
+        raise HTTPException(status_code=404, detail="Town not found")
+    return crud.update_town_name(db, town=db_town, new_name=town.town_name)
 
 
 @router.post("/towns/{town_id}/stops/", response_model=app.schemas.Stop)

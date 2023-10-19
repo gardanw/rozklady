@@ -22,8 +22,8 @@
         {% for town in towns %}
         <li town-id="{{ town.id }}">
             <span class="town-name">{{ town.town_name }}</span>
-            <button type="button" class="edit" onclick="editTown('{{ town.id }}', '{{ town.town_name }}')">Edytuj</button>
-            <button type="button" class="delete" onclick="deleteTown('{{ town.id }}', '{{ town.town_name }}')">Usuń</button>
+            <button type="button" class="edit" onclick="editTown('{{ town.id }}')">Edytuj</button>
+            <button type="button" class="delete" onclick="deleteTown('{{ town.id }}')">Usuń</button>
         </li>
         {% endfor %}
     </ul>
