@@ -19,7 +19,7 @@ async def create_town(town: app.schemas.TownCreate, db: Session = Depends(get_db
     return crud.create_town(db=db, town=town)
 
 
-@router.get("/towns/")
+@router.get("/towns/", response_model=list[app.schemas.TownInDB])
 async def add_town_html(request: Request, db: Session = Depends(get_db)):
     db_towns = crud.get_towns(db=db)
     return templates.TemplateResponse(
@@ -27,7 +27,7 @@ async def add_town_html(request: Request, db: Session = Depends(get_db)):
     )
 
 
-@router.get("/towns/{town_id}")
+@router.get("/towns/{town_id}", response_model=app.schemas.TownInDB)
 async def read_town(request: Request, town_id: int, db: Session = Depends(get_db)):
     db_town = crud.get_town(db, town_id=town_id)
     if db_town is None:
@@ -56,7 +56,7 @@ async def edit_town_name(
 
 
 @router.post("/towns/{town_id}/stops/", response_model=app.schemas.Stop)
-async def create_stop(
+async def create_town_stop(
     town_id: int, stop: app.schemas.StopCreate, db: Session = Depends(get_db)
 ):
     db_town = crud.get_town(db, town_id=town_id)
@@ -66,6 +66,32 @@ async def create_stop(
     if any(map(lambda x: x.stop_name == stop.stop_name, db_town_stops)):
         raise HTTPException(status_code=400, detail="Stop already in Town")
     return crud.create_stop(db=db, stop=stop, town_id=town_id)
+
+
+@router.get("/stops/{stop_id}", response_model=app.schemas.StopInDB)
+async def read_stop(request: Request, stop_id: int, db: Session = Depends(get_db)):
+    db_stop = crud.get_stop(db=db, stop_id=stop_id)
+    if db_stop is None:
+        raise HTTPException(status_code=404, detail="Stop not found")
+    return db_stop  # TODO: html stop
+
+
+@router.delete("/stops/{stop_id}", response_model=app.schemas.StopInDB)
+async def del_stop(stop_id: int, db: Session = Depends(get_db)):
+    db_stop = crud.get_stop(db=db, stop_id=stop_id)
+    if db_stop is None:
+        raise HTTPException(status_code=404, detail="Stop not found")
+    return crud.del_stop(db, stop=db_stop)
+
+
+@router.put("/stops/{stop_id}", response_model=app.schemas.StopInDB)
+async def edit_stop_name(
+    stop_id: int, stop: app.schemas.StopBase, db: Session = Depends(get_db)
+):
+    db_stop = crud.get_stop(db=db, stop_id=stop_id)
+    if db_stop is None:
+        raise HTTPException(status_code=404, detail="Stop not found")
+    return crud.update_stop_name(db, stop=db_stop, new_name=stop.stop_name)
 
 
 @router.get("/towns/{town_id}/stops/", response_model=list[app.schemas.Stop])

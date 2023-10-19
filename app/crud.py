@@ -28,13 +28,17 @@ def get_towns(db: Session) -> list[app.schemas.TownInDB]:
     return db.query(app.models.Town).order_by(app.models.Town.town_name).all()
 
 
-def update_town_name(db: Session, town: app.schemas.TownInDB, new_name: str) -> app.schemas.TownInDB:
+def update_town_name(
+    db: Session, town: app.schemas.TownInDB, new_name: str
+) -> app.schemas.TownInDB:
     town.town_name = new_name
     db.commit()
     return town
 
 
 def del_town(db: Session, town: app.schemas.TownInDB) -> app.schemas.TownInDB:
+    for stop in town.stops:
+        del_stop(db, stop=stop)
     db.delete(town)
     db.commit()
     return town
@@ -44,10 +48,30 @@ def get_town_stops(db: Session, town_id: int):
     return db.query(app.models.Stop).filter(app.models.Stop.town_id == town_id).all()
 
 
-def create_stop(db: Session, stop: app.schemas.StopCreate, town_id: int):
+def create_stop(
+    db: Session, stop: app.schemas.StopCreate, town_id: int
+) -> app.schemas.Stop:
     db_stop = app.models.Stop(**stop.model_dump(), town_id=town_id)
     save_in_db(db=db, obj=db_stop)
     return db_stop
+
+
+def get_stop(db: Session, stop_id: int) -> app.schemas.StopInDB:
+    return db.query(app.models.Stop).filter(app.models.Stop.id == stop_id).first()
+
+
+def update_stop_name(
+    db: Session, stop: app.schemas.StopInDB, new_name: str
+) -> app.schemas.StopInDB:
+    stop.stop_name = new_name
+    db.commit()
+    return stop
+
+
+def del_stop(db: Session, stop: app.schemas.StopInDB) -> app.schemas.StopInDB:
+    db.delete(stop)
+    db.commit()
+    return stop
 
 
 def get_buslien(db: Session, busline_id: int):
@@ -76,7 +100,3 @@ def create_run_stop(db: Session, run_stop: app.schemas.RunStopCreate, run_id: in
 
 def get_run(db: Session, run_id: int):
     return db.query(app.models.Run).filter(app.models.Run.id == run_id).first()
-
-
-def get_stop(db: Session, stop_id: int):
-    return db.query(app.models.Stop).filter(app.models.Stop.id == stop_id)

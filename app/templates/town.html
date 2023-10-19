@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ town.town_name }}</title>
+</head>
+<body>
+<div>
+    <h1>{{ town.town_name }}</h1>
+</div>
+<div>
+    <h2>Lista przystanków</h2>
+    <ul>
+        {% for stop in town.stops %}
+        <li stop-id="{{ stop.id }}">
+            <span class="stop-name">{{ stop.stop_name }}</span>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+</body>
+</html>
