@@ -1,0 +1,7 @@
+.stop-list {
+  display: block;
+}
+
+.stop-list:has(> ul:empty) {
+  display: none;
+}

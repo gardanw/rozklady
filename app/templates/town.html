@@ -3,20 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ town.town_name }}</title>
+    <link rel="icon" href="{{ url_for('static', path='favicon.ico') }}" type="image/x-icon">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', path='stop_list.css') }}">
 </head>
 <body>
 <div>
     <h1>{{ town.town_name }}</h1>
 </div>
 <div>
+    <h2>Dodaj nowy przystanek</h2>
+    <label for="stop-name">Nazwa przystanku: </label>
+    <input type="text" id="stop-name" name="stop_name" required>
+    <button type="button" class="add" onclick="addStop('{{ town.id }}')">Dodaj przystanek</button>
+    <script src="{{ url_for('static', path='add_stop.js') }}"></script>
+</div>
+<div>
     <h2>Lista przystanków</h2>
     <ul>
         {% for stop in town.stops %}
         <li stop-id="{{ stop.id }}">
-            <span class="stop-name">{{ stop.stop_name }}</span>
+            <a class="stop-name" href="/stops/{{ stop.id }}">{{ stop.stop_name }}</a>
+            <button type="button" class="edit" onclick="editStop('{{ stop.id }}')">Edytuj</button>
+            <button type="button" class="delete" onclick="deleteStop('{{ stop.id }}')">Usuń</button>
         </li>
         {% endfor %}
     </ul>
+    <script src="{{ url_for('static', path='del_stop.js') }}"></script>
+    <script src="{{ url_for('static', path='edit_stop.js') }}"></script>
+</div>
+<div id="new-stop" class="stop-list">
+    <h2>Nowo dodane:</h2>
+    <ul id="new-stop-list" class="stop-ul"></ul>
 </div>
 </body>
 </html>

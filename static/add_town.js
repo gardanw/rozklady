@@ -17,10 +17,11 @@ document.getElementById('town-form').addEventListener('submit', async (event) =>
         const newTown = await response.json();
         const newTownList = document.getElementById('new-town-list');
         const newTownElement = document.createElement('li');
-        const newSpanTownName = document.createElement('span')
-        newSpanTownName.setAttribute('class',"town-name")
-        newSpanTownName.textContent = newTown.town_name;
-        newTownElement.appendChild(newSpanTownName)
+        const newLinkTownName = document.createElement('a')
+        newLinkTownName.setAttribute('class',"town-name")
+        newLinkTownName.setAttribute('href',`/towns/${newTown.id}`)
+        newLinkTownName.textContent = newTown.town_name;
+        newTownElement.appendChild(newLinkTownName)
         newTownElement.setAttribute('town-id', newTown.id);
 
         const newDelButton = document.createElement("button");

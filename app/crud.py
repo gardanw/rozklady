@@ -45,7 +45,12 @@ def del_town(db: Session, town: app.schemas.TownInDB) -> app.schemas.TownInDB:
 
 
 def get_town_stops(db: Session, town_id: int):
-    return db.query(app.models.Stop).filter(app.models.Stop.town_id == town_id).all()
+    return (
+        db.query(app.models.Stop)
+        .filter(app.models.Stop.town_id == town_id)
+        .order_by(app.models.Stop.stop_name)
+        .all()
+    )
 
 
 def create_stop(
