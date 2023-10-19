@@ -79,16 +79,50 @@ def del_stop(db: Session, stop: app.schemas.StopInDB) -> app.schemas.StopInDB:
     return stop
 
 
-def get_buslien(db: Session, busline_id: int):
+def create_busline(
+    db: Session, busline: app.schemas.BuslineCreate
+) -> app.schemas.Busline:
+    db_busline = app.models.Busline(**busline.model_dump())
+    save_in_db(db=db, obj=db_busline)
+    return db_busline
+
+
+def get_busline(db: Session, busline_id: int) -> app.schemas.BuslineInDB:
     return (
         db.query(app.models.Busline).filter(app.models.Busline.id == busline_id).first()
     )
 
 
-def create_busline(db: Session, busline: app.schemas.BuslineCreate):
-    db_busline = app.models.Busline(**busline.model_dump())
-    save_in_db(db=db, obj=db_busline)
-    return db_busline
+def get_busline_by_name_and_direction(
+    db: Session, name: str, ret: bool
+) -> app.schemas.BuslineInDB:
+    return (
+        db.query(app.models.Busline)
+        .filter(app.models.Busline.busline_name == name)
+        .filter(app.models.Busline.busline_return == ret)
+        .first()
+    )
+
+
+def get_buslines(db: Session) -> list[app.schemas.BuslineInDB]:
+    return db.query(app.models.Busline).order_by(app.models.Busline.busline_name).all()
+
+
+def update_busline(
+    db: Session, busline: app.schemas.BuslineInDB, new_name: str, ret: bool
+) -> app.schemas.BuslineInDB:
+    busline.busline_name = new_name
+    busline.busline_return = ret
+    db.commit()
+    return busline
+
+
+def del_busline(
+    db: Session, busline: app.schemas.BuslineInDB
+) -> app.schemas.BuslineInDB:
+    db.delete(busline)
+    db.commit()
+    return busline
 
 
 def create_run(db: Session, run: app.schemas.RunCreate, busline_id: int):
