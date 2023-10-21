@@ -13,8 +13,7 @@ class TownCreate(TownBase):
 
 class Town(TownBase):
     id: int
-    stops: list[Stop] = []
 
 
 class TownInDB(Town):
-    pass
+    stops: list[Stop] = []

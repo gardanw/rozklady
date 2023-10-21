@@ -14,8 +14,7 @@ class RunCreate(RunBase):
 class Run(RunBase):
     id: int
     busline_id: int
-    run_stops: list[RunStop] = []
 
 
 class RunInDB(Run):
-    pass
+    run_stops: list[RunStop] = []

@@ -14,8 +14,7 @@ class BuslineCreate(BuslineBase):
 
 class Busline(BuslineBase):
     id: int
-    runs: list[Run] = []
 
 
 class BuslineInDB(Busline):
-    pass
+    runs: list[Run] = []

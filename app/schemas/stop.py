@@ -14,8 +14,7 @@ class StopCreate(StopBase):
 class Stop(StopBase):
     id: int
     town_id: int
-    run_stops: list[RunStop] = []
 
 
 class StopInDB(Stop):
-    pass
+    run_stops: list[RunStop] = []

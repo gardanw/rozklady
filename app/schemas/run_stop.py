@@ -6,11 +6,10 @@ from pydantic import BaseModel
 class RunStopBase(BaseModel):
     arrival_time: time
     depart_time: time
-    stop_id: int
 
 
 class RunStopCreate(RunStopBase):
-    pass
+    stop_id: int
 
 
 class RunStop(RunStopBase):
