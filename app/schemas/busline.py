@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from app.schemas.run import Run
+from app.schemas.run import RunInDB
 
 
 class BuslineBase(BaseModel):
@@ -17,4 +17,4 @@ class Busline(BuslineBase):
 
 
 class BuslineInDB(Busline):
-    runs: list[Run] = []
+    runs: list[RunInDB] = []

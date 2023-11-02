@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from app.schemas.stop import Stop
+from app.schemas.stop import StopInDB
 
 
 class TownBase(BaseModel):
@@ -16,4 +16,4 @@ class Town(TownBase):
 
 
 class TownInDB(Town):
-    stops: list[Stop] = []
+    stops: list[StopInDB] = []

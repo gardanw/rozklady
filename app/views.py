@@ -1,20 +1,32 @@
+from typing import Union
+
 from fastapi import APIRouter, Depends, Request, HTTPException
 from sqlalchemy.orm import Session
 
+import app.schemas
 from app import crud
 from app.database import get_db
-import app.schemas
-
+from app.utils import get_town_by_param
 
 router = APIRouter()
 
 
-@router.post("/towns/", response_model=app.schemas.Town)
-async def create_town(town: app.schemas.TownCreate, db: Session = Depends(get_db)):
-    db_town = crud.get_town_by_name(db, name=town.town_name)
-    if db_town:
-        raise HTTPException(status_code=400, detail="Town already registered")
-    return crud.create_town(db=db, town=town)
+@router.post("/towns/", response_model=list[app.schemas.Town])
+async def create_town(
+    towns: Union[list[app.schemas.TownCreate], app.schemas.TownCreate],
+    db: Session = Depends(get_db),
+):
+    if not isinstance(towns, list):
+        towns = [towns]
+
+    created_towns = []
+
+    for town in towns:
+        db_town = crud.get_town_by_name(db=db, name=town.town_name)
+        if not db_town:
+            created_town = crud.create_town(db=db, town=town)
+            created_towns.append(created_town)
+    return created_towns
 
 
 @router.get("/towns/", response_model=list[app.schemas.TownInDB])
@@ -23,48 +35,51 @@ async def read_towns(db: Session = Depends(get_db)):
     return db_towns
 
 
-@router.get("/towns/{town_id}", response_model=app.schemas.TownInDB)
-async def read_town(town_id: int, db: Session = Depends(get_db)):
-    db_town = crud.get_town(db, town_id=town_id)
+@router.get("/towns/{town}", response_model=app.schemas.TownInDB)
+async def read_town(town: Union[int, str], db: Session = Depends(get_db)):
+    db_town = get_town_by_param(db=db, town=town)
     if db_town is None:
         raise HTTPException(status_code=404, detail="Town not found")
     return db_town
 
 
-@router.delete("/towns/{town_id}", response_model=app.schemas.TownInDB)
-async def del_town(town_id: int, db: Session = Depends(get_db)):
-    db_town = crud.get_town(db, town_id=town_id)
+@router.delete("/towns/{town}", response_model=app.schemas.TownInDB)
+async def del_town(town: Union[int, str], db: Session = Depends(get_db)):
+    db_town = get_town_by_param(db=db, town=town)
     if db_town is None:
         raise HTTPException(status_code=404, detail="Town not found")
-    return crud.del_town(db, town=db_town)
+    return crud.del_town(db=db, town=db_town)
 
 
-@router.put("/towns/{town_id}", response_model=app.schemas.TownInDB)
+@router.put("/towns/{town}", response_model=app.schemas.TownInDB)
 async def edit_town_name(
-    town_id: int, town: app.schemas.TownBase, db: Session = Depends(get_db)
+    town: Union[int, str],
+    temp_town: app.schemas.TownBase,
+    db: Session = Depends(get_db),
 ):
-    db_town = crud.get_town(db, town_id=town_id)
+    db_town = get_town_by_param(db=db, town=town)
     if db_town is None:
         raise HTTPException(status_code=404, detail="Town not found")
-    return crud.update_town_name(db, town=db_town, new_name=town.town_name)
+    return crud.update_town_name(db=db, town=db_town, new_name=temp_town.town_name)
 
 
-@router.post("/towns/{town_id}/stops/", response_model=app.schemas.Stop)
+@router.post("/towns/{town}/stops/", response_model=app.schemas.Stop)
 async def create_town_stop(
-    town_id: int, stop: app.schemas.StopCreate, db: Session = Depends(get_db)
+    town: Union[int, str], stop: app.schemas.StopCreate, db: Session = Depends(get_db)
 ):
-    db_town = crud.get_town(db, town_id=town_id)
+    db_town = get_town_by_param(db=db, town=town)
     if db_town is None:
         raise HTTPException(status_code=404, detail="Town not found")
-    db_town_stops = crud.get_town_stops(db=db, town_id=town_id)
+
+    db_town_stops = crud.get_town_stops(db=db, town_id=db_town.id)
     if any(map(lambda x: x.stop_name == stop.stop_name, db_town_stops)):
         raise HTTPException(status_code=400, detail="Stop already in Town")
-    return crud.create_stop(db=db, stop=stop, town_id=town_id)
+    return crud.create_stop(db=db, stop=stop, town_id=db_town.id)
 
 
-@router.get("/towns/{town_id}/stops/", response_model=list[app.schemas.Stop])
-async def read_town_stops(town_id: int, db: Session = Depends(get_db)):
-    db_town = crud.get_town(db=db, town_id=town_id)
+@router.get("/towns/{town}/stops/", response_model=list[app.schemas.Stop])
+async def read_town_stops(town: Union[int, str], db: Session = Depends(get_db)):
+    db_town = get_town_by_param(db=db, town=town)
     if db_town is None:
         raise HTTPException(status_code=404, detail="Town not found")
     stops = db_town.stops
