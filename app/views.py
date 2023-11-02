@@ -36,7 +36,7 @@ async def read_towns(db: Session = Depends(get_db)):
 
 
 @router.get("/towns/{town}", response_model=app.schemas.TownInDB)
-async def read_town(town: Union[int, str], db: Session = Depends(get_db)):
+async def read_town(town: int | str, db: Session = Depends(get_db)):
     db_town = get_town_by_param(db=db, town=town)
     if db_town is None:
         raise HTTPException(status_code=404, detail="Town not found")

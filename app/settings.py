@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    DEBUG: bool = False
+    DEBUG: bool = True
     DATABASE_URL: str = "postgresql://username:password@localhost/database_name"
 
     class Config:
