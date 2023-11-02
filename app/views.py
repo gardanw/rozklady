@@ -1,6 +1,6 @@
 from typing import Union
 
-from fastapi import APIRouter, Depends, Request, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 import app.schemas
@@ -36,7 +36,7 @@ async def read_towns(db: Session = Depends(get_db)):
 
 
 @router.get("/towns/{town}", response_model=app.schemas.TownInDB)
-async def read_town(town: int | str, db: Session = Depends(get_db)):
+async def read_town(town: Union[str, int], db: Session = Depends(get_db)):
     db_town = get_town_by_param(db=db, town=town)
     if db_town is None:
         raise HTTPException(status_code=404, detail="Town not found")
@@ -63,18 +63,31 @@ async def edit_town_name(
     return crud.update_town_name(db=db, town=db_town, new_name=temp_town.town_name)
 
 
-@router.post("/towns/{town}/stops/", response_model=app.schemas.Stop)
+@router.post("/towns/{town}/stops/", response_model=list[app.schemas.Stop])
 async def create_town_stop(
-    town: Union[int, str], stop: app.schemas.StopCreate, db: Session = Depends(get_db)
+    town: Union[int, str],
+    stops: Union[list[app.schemas.StopCreate], app.schemas.StopCreate],
+    db: Session = Depends(get_db),
 ):
     db_town = get_town_by_param(db=db, town=town)
     if db_town is None:
         raise HTTPException(status_code=404, detail="Town not found")
 
-    db_town_stops = crud.get_town_stops(db=db, town_id=db_town.id)
-    if any(map(lambda x: x.stop_name == stop.stop_name, db_town_stops)):
-        raise HTTPException(status_code=400, detail="Stop already in Town")
-    return crud.create_stop(db=db, stop=stop, town_id=db_town.id)
+    town_stops_name = [
+        town_stop.stop_name
+        for town_stop in crud.get_town_stops(db=db, town_id=db_town.id)
+    ]
+
+    if not isinstance(stops, list):
+        stops = [stops]
+
+    created_stops = []
+
+    for stop in stops:
+        if stop.stop_name not in town_stops_name:
+            created_stop = crud.create_stop(db=db, stop=stop, town_id=db_town.id)
+            created_stops.append(created_stop)
+    return created_stops
 
 
 @router.get("/towns/{town}/stops/", response_model=list[app.schemas.Stop])
@@ -87,7 +100,7 @@ async def read_town_stops(town: Union[int, str], db: Session = Depends(get_db)):
 
 
 @router.get("/stops/{stop_id}", response_model=app.schemas.StopInDB)
-async def read_stop(request: Request, stop_id: int, db: Session = Depends(get_db)):
+async def read_stop(stop_id: int, db: Session = Depends(get_db)):
     db_stop = crud.get_stop(db=db, stop_id=stop_id)
     if db_stop is None:
         raise HTTPException(status_code=404, detail="Stop not found")
