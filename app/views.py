@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 import app.schemas
 from app import crud
 from app.database import get_db
-from app.utils import get_town_by_param
+from app.utils import get_town_by_param, get_stop_by_param
 
 router = APIRouter()
 
@@ -99,17 +99,21 @@ async def read_town_stops(town: Union[int, str], db: Session = Depends(get_db)):
     return stops
 
 
-@router.get("/stops/{stop_id}", response_model=app.schemas.StopInDB)
-async def read_stop(stop_id: int, db: Session = Depends(get_db)):
-    db_stop = crud.get_stop(db=db, stop_id=stop_id)
+@router.get("/stops/{stop}", response_model=app.schemas.StopInDB)
+async def read_stop(
+    stop: Union[int, str], town: Union[int, str] = "", db: Session = Depends(get_db)
+):
+    db_stop = get_stop_by_param(db=db, stop=stop, town=town)
     if db_stop is None:
         raise HTTPException(status_code=404, detail="Stop not found")
     return db_stop
 
 
-@router.delete("/stops/{stop_id}", response_model=app.schemas.StopInDB)
-async def del_stop(stop_id: int, db: Session = Depends(get_db)):
-    db_stop = crud.get_stop(db=db, stop_id=stop_id)
+@router.delete("/stops/{stop}", response_model=app.schemas.StopInDB)
+async def del_stop(
+    stop: Union[int, str], town: Union[int, str] = "", db: Session = Depends(get_db)
+):
+    db_stop = get_stop_by_param(db=db, stop=stop, town=town)
     if db_stop is None:
         raise HTTPException(status_code=404, detail="Stop not found")
     return crud.del_stop(db, stop=db_stop)
@@ -117,12 +121,15 @@ async def del_stop(stop_id: int, db: Session = Depends(get_db)):
 
 @router.put("/stops/{stop_id}", response_model=app.schemas.StopInDB)
 async def edit_stop_name(
-    stop_id: int, stop: app.schemas.StopBase, db: Session = Depends(get_db)
+    stop: Union[int, str],
+    temp_stop: app.schemas.StopBase,
+    town: Union[int, str] = "",
+    db: Session = Depends(get_db),
 ):
-    db_stop = crud.get_stop(db=db, stop_id=stop_id)
+    db_stop = get_stop_by_param(db=db, stop=stop, town=town)
     if db_stop is None:
         raise HTTPException(status_code=404, detail="Stop not found")
-    return crud.update_stop_name(db, stop=db_stop, new_name=stop.stop_name)
+    return crud.update_stop_name(db, stop=db_stop, new_name=temp_stop.stop_name)
 
 
 @router.post("/buslines/", response_model=app.schemas.Busline)
