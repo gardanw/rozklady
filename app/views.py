@@ -248,9 +248,9 @@ async def read_run_run_stops(run_id: int, db: Session = Depends(get_db)):
     return db_run.run_stops
 
 
-@router.get("/stops/{stop_id}/run_stops", response_model=list[app.schemas.RunStopInDB])
-async def read_stop_run_stops(stop_id: int, db: Session = Depends(get_db)):
-    db_stop = crud.get_stop(db=db, stop_id=stop_id)
+@router.get("/stops/{stop}/run_stops", response_model=list[app.schemas.RunStopInDB])
+async def read_stop_run_stops(stop: Union[int, str], town: Union[int, str] = "", db: Session = Depends(get_db)):
+    db_stop = get_stop_by_param(db=db, stop=stop, town=town)
     if db_stop is None:
         raise HTTPException(status_code=404, detail="Stop not found")
     return db_stop.run_stops
