@@ -13,6 +13,11 @@ def create_town(
 ) -> app.schemas.Town:
     db_town = app.models.Town(town_name=town.town_name)
     save_in_db(db=db, obj=db_town)
+    town_stops_names = []
+    for stop in town.stops:
+        if stop.stop_name not in town_stops_names:
+            create_stop(db=db, stop=stop, town_id=db_town.id)
+            town_stops_names.append(stop.stop_name)
     return db_town
 
 

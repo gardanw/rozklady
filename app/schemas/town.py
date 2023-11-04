@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from app.schemas.stop import StopInDB
+from app.schemas.stop import StopInDB, StopCreate
 
 
 class TownBase(BaseModel):
@@ -8,7 +8,7 @@ class TownBase(BaseModel):
 
 
 class TownCreate(TownBase):
-    pass
+    stops: list[StopCreate] = []
 
 
 class Town(TownBase):

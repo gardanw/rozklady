@@ -87,6 +87,7 @@ async def create_town_stop(
         if stop.stop_name not in town_stops_name:
             created_stop = crud.create_stop(db=db, stop=stop, town_id=db_town.id)
             created_stops.append(created_stop)
+            town_stops_name.append(stop.stop_name)
     return created_stops
 
 
@@ -249,7 +250,9 @@ async def read_run_run_stops(run_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/stops/{stop}/run_stops", response_model=list[app.schemas.RunStopInDB])
-async def read_stop_run_stops(stop: Union[int, str], town: Union[int, str] = "", db: Session = Depends(get_db)):
+async def read_stop_run_stops(
+    stop: Union[int, str], town: Union[int, str] = "", db: Session = Depends(get_db)
+):
     db_stop = get_stop_by_param(db=db, stop=stop, town=town)
     if db_stop is None:
         raise HTTPException(status_code=404, detail="Stop not found")
