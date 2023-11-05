@@ -63,3 +63,21 @@ def get_stop_by_param(db: Session, stop: Union[str, int], town: Union[str, int])
             raise HTTPException(status_code=400, detail="Town not specified")
         db_stop = crud.get_stop(db=db, stop_id=stop_id)
     return db_stop
+
+
+def get_busline_by_param(db: Session, busline: Union[str, int], ret: bool = None):
+    if ret is not None:
+        db_busline = crud.get_busline_by_name_and_direction(
+            db=db, name=busline, ret=ret
+        )
+        if db_busline is None:
+            raise HTTPException(status_code=404, detail="Busline not found")
+    else:
+        try:
+            busline = int(busline)
+        except ValueError as e:
+            if settings.DEBUG:
+                print(e)
+                raise HTTPException(status_code=400, detail="Direction not specified")
+        db_busline = crud.get_busline(db=db, busline_id=busline)
+    return db_busline

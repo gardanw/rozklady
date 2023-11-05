@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 import app.schemas
 from app import crud
 from app.database import get_db
-from app.utils import get_town_by_param, get_stop_by_param
+from app.utils import get_town_by_param, get_stop_by_param, get_busline_by_param
 
 router = APIRouter()
 
@@ -120,7 +120,7 @@ async def del_stop(
     return crud.del_stop(db, stop=db_stop)
 
 
-@router.put("/stops/{stop_id}", response_model=app.schemas.StopInDB)
+@router.put("/stops/{stop}", response_model=app.schemas.StopInDB)
 async def edit_stop_name(
     stop: Union[int, str],
     temp_stop: app.schemas.StopBase,
@@ -133,16 +133,24 @@ async def edit_stop_name(
     return crud.update_stop_name(db, stop=db_stop, new_name=temp_stop.stop_name)
 
 
-@router.post("/buslines/", response_model=app.schemas.Busline)
+@router.post("/buslines/", response_model=list[app.schemas.Busline])
 async def create_busline(
-    busline: app.schemas.BuslineCreate, db: Session = Depends(get_db)
+    buslines: Union[list[app.schemas.BuslineCreate], app.schemas.BuslineCreate],
+    db: Session = Depends(get_db),
 ):
-    busline_db = crud.get_busline_by_name_and_direction(
-        db, name=busline.busline_name, ret=busline.busline_return
-    )
-    if busline_db:
-        raise HTTPException(status_code=400, detail="Busline already registered")
-    return crud.create_busline(db=db, busline=busline)
+    if not isinstance(buslines, list):
+        buslines = [buslines]
+
+    created_buslines = []
+
+    for busline in buslines:
+        busline_db = crud.get_busline_by_name_and_direction(
+            db, name=busline.busline_name, ret=busline.busline_return
+        )
+        if not busline_db:
+            created_busline = crud.create_busline(db=db, busline=busline)
+            created_buslines.append(created_busline)
+    return created_buslines
 
 
 @router.get("/buslines/", response_model=list[app.schemas.BuslineInDB])
@@ -151,50 +159,62 @@ async def read_buslines(db: Session = Depends(get_db)):
     return db_buslines
 
 
-@router.get("/buslines/{busline_id}", response_model=app.schemas.BuslineInDB)
-async def read_busline(busline_id: int, db: Session = Depends(get_db)):
-    db_busline = crud.get_busline(db, busline_id=busline_id)
+@router.get("/buslines/{busline}", response_model=app.schemas.BuslineInDB)
+async def read_busline(
+    busline: Union[int, str], ret: bool = None, db: Session = Depends(get_db)
+):
+    db_busline = get_busline_by_param(db=db, busline=busline, ret=ret)
     if db_busline is None:
         raise HTTPException(status_code=404, detail="Busline not found")
     return db_busline
 
 
-@router.delete("/buslines/{busline_id}", response_model=app.schemas.BuslineInDB)
-async def del_busline(busline_id: int, db: Session = Depends(get_db)):
-    db_busline = crud.get_busline(db, busline_id=busline_id)
+@router.delete("/buslines/{busline}", response_model=app.schemas.BuslineInDB)
+async def del_busline(
+    busline: Union[int, str], ret: bool = None, db: Session = Depends(get_db)
+):
+    db_busline = get_busline_by_param(db=db, busline=busline, ret=ret)
     if db_busline is None:
         raise HTTPException(status_code=404, detail="Busline not found")
     return crud.del_busline(db, busline=db_busline)
 
 
-@router.put("/buslines/{busline_id}", response_model=app.schemas.BuslineInDB)
+@router.put("/buslines/{busline}", response_model=app.schemas.BuslineInDB)
 async def edit_busline(
-    busline_id: int, busline: app.schemas.BuslineBase, db: Session = Depends(get_db)
+    busline: Union[int, str],
+    temp_busline: app.schemas.BuslineBase,
+    ret: bool = None,
+    db: Session = Depends(get_db),
 ):
-    db_busline = crud.get_busline(db, busline_id=busline_id)
+    db_busline = get_busline_by_param(db=db, busline=busline, ret=ret)
     if db_busline is None:
         raise HTTPException(status_code=404, detail="Busline not found")
     return crud.update_busline(
-        db,
+        db=db,
         busline=db_busline,
-        new_name=busline.busline_name,
-        ret=busline.busline_return,
+        new_name=temp_busline.busline_name,
+        ret=temp_busline.busline_return,
     )
 
 
-@router.post("/buslines/{busline_id}/runs/", response_model=app.schemas.Run)
+@router.post("/buslines/{busline}/runs/", response_model=app.schemas.Run)
 async def create_busline_run(
-    busline_id: int, run: app.schemas.RunCreate, db: Session = Depends(get_db)
+    busline: int,
+    run: app.schemas.RunCreate,
+    ret: bool = None,
+    db: Session = Depends(get_db),
 ):
-    db_busline = crud.get_busline(db=db, busline_id=busline_id)
+    db_busline = get_busline_by_param(db=db, busline=busline, ret=ret)
     if db_busline is None:
         raise HTTPException(status_code=404, detail="Busline not found")
-    return crud.create_run(db=db, run=run, busline_id=busline_id)
+    return crud.create_run(db=db, run=run, busline_id=db_busline.id)
 
 
-@router.get("/buslines/{busline_id}/runs/", response_model=list[app.schemas.RunInDB])
-async def read_busline_runs(busline_id: int, db: Session = Depends(get_db)):
-    db_busline = crud.get_busline(db=db, busline_id=busline_id)
+@router.get("/buslines/{busline}/runs/", response_model=list[app.schemas.RunInDB])
+async def read_busline_runs(
+    busline: int, ret: bool = None, db: Session = Depends(get_db)
+):
+    db_busline = get_busline_by_param(db=db, busline=busline, ret=ret)
     if db_busline is None:
         raise HTTPException(status_code=404, detail="Busline not found")
     return db_busline.runs
