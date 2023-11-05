@@ -8,7 +8,7 @@ class TownBase(BaseModel):
 
 
 class TownCreate(TownBase):
-    stops: list[StopCreate] = []
+    stops: list[StopCreate] = None
 
 
 class Town(TownBase):
