@@ -197,22 +197,32 @@ async def edit_busline(
     )
 
 
-@router.post("/buslines/{busline}/runs/", response_model=app.schemas.Run)
+@router.post("/buslines/{busline}/runs/", response_model=list[app.schemas.Run])
 async def create_busline_run(
-    busline: int,
-    run: app.schemas.RunCreate,
+    busline: Union[int, str],
+    runs: Union[list[app.schemas.RunCreate], app.schemas.RunCreate],
     ret: bool = None,
     db: Session = Depends(get_db),
 ):
     db_busline = get_busline_by_param(db=db, busline=busline, ret=ret)
     if db_busline is None:
         raise HTTPException(status_code=404, detail="Busline not found")
-    return crud.create_run(db=db, run=run, busline_id=db_busline.id)
+
+    if not isinstance(runs, list):
+        runs = [runs]
+
+    created_runs = []
+
+    for run in runs:
+        created_run = crud.create_run(db=db, run=run, busline_id=db_busline.id)
+        created_runs.append(created_run)
+
+    return created_runs
 
 
 @router.get("/buslines/{busline}/runs/", response_model=list[app.schemas.RunInDB])
 async def read_busline_runs(
-    busline: int, ret: bool = None, db: Session = Depends(get_db)
+    busline: Union[int, str], ret: bool = None, db: Session = Depends(get_db)
 ):
     db_busline = get_busline_by_param(db=db, busline=busline, ret=ret)
     if db_busline is None:
@@ -246,19 +256,27 @@ async def edit_run_descript(
     return crud.update_run_descript(db, run=db_run, descript=run.descript)
 
 
-@router.post("/runs/{run_id}/run_stops", response_model=app.schemas.RunStop)
+@router.post("/runs/{run_id}/run_stops", response_model=list[app.schemas.RunStop])
 async def create_run_stop(
     run_id: int,
-    run_stop: app.schemas.RunStopCreate,
+    run_stops: Union[list[app.schemas.RunStopCreate], app.schemas.RunStopCreate],
     db: Session = Depends(get_db),
 ):
     db_run = crud.get_run(db=db, run_id=run_id)
     if db_run is None:
         raise HTTPException(status_code=404, detail="Run not found")
-    db_stop = crud.get_stop(db=db, stop_id=run_stop.stop_id)
-    if db_stop is None:
-        raise HTTPException(status_code=404, detail="Stop not found")
-    return crud.create_run_stop(db=db, run_stop=run_stop, run_id=run_id)
+
+    if not isinstance(run_stops, list):
+        run_stops = [run_stops]
+
+    created_run_stops = []
+
+    for run_stop in run_stops:
+        created_run_stop = crud.create_run_stop(
+            db=db, run_stop=run_stop, run_id=db_run.id
+        )
+        created_run_stops.append(created_run_stop)
+    return created_run_stops
 
 
 @router.get("/runs/{run_id}/run_stops", response_model=list[app.schemas.RunStopInDB])

@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 import app.models
 import app.schemas
-from app.utils import save_in_db
+from app.utils import save_in_db, get_stop_by_param
 
 
 def create_town(
@@ -117,8 +117,13 @@ def create_busline(
     db: Session,
     busline: app.schemas.BuslineCreate,
 ) -> app.schemas.Busline:
-    db_busline = app.models.Busline(**busline.model_dump())
+    db_busline = app.models.Busline(
+        busline_name=busline.busline_name, busline_return=busline.busline_return
+    )
     save_in_db(db=db, obj=db_busline)
+    if busline.runs:
+        for run in busline.runs:
+            create_run(db=db, run=run, busline_id=db_busline.id)
     return db_busline
 
 
@@ -178,8 +183,11 @@ def create_run(
     run: app.schemas.RunCreate,
     busline_id: int,
 ) -> app.schemas.Run:
-    db_run = app.models.Run(**run.model_dump(), busline_id=busline_id)
+    db_run = app.models.Run(descript=run.descript, busline_id=busline_id)
     save_in_db(db=db, obj=db_run)
+    if run.run_stops:
+        for run_stop in run.run_stops:
+            create_run_stop(db=db, run_stop=run_stop, run_id=db_run.id)
     return db_run
 
 
@@ -231,7 +239,13 @@ def create_run_stop(
     run_stop: app.schemas.RunStopCreate,
     run_id: int,
 ) -> app.schemas.RunStop:
-    db_run_stop = app.models.RunStop(**run_stop.model_dump(), run_id=run_id)
+    db_stop = get_stop_by_param(db=db, stop=run_stop.stop, town=run_stop.town)
+    db_run_stop = app.models.RunStop(
+        depart_time=run_stop.depart_time,
+        arrival_time=run_stop.arrival_time,
+        stop_id=db_stop.id,
+        run_id=run_id,
+    )
     save_in_db(db=db, obj=db_run_stop)
     return db_run_stop
 

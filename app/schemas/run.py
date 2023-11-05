@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from app.schemas.run_stop import RunStopInDB
+from app.schemas.run_stop import RunStopInDB, RunStopCreate
 
 
 class RunBase(BaseModel):
@@ -8,7 +8,7 @@ class RunBase(BaseModel):
 
 
 class RunCreate(RunBase):
-    pass
+    run_stops: list[RunStopCreate] = None
 
 
 class Run(RunBase):
