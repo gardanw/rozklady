@@ -1,3 +1,4 @@
+from datetime import time
 from typing import Union
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -6,6 +7,7 @@ from sqlalchemy.orm import Session
 import app.schemas
 from app import crud
 from app.database import get_db
+from app.services import find_way
 from app.utils import get_town_by_param, get_stop_by_param, get_busline_by_param
 
 router = APIRouter()
@@ -331,3 +333,31 @@ async def edit_run_stop_times(
         arrival_time=run_stop.arrival_time,
         depart_time=run_stop.depart_time,
     )
+
+
+@router.get("/wyszukiwarka/")
+async def finder(
+    dep_stop: Union[int, str] = None,
+    arr_stop: Union[int, str] = None,
+    arr_town: Union[int, str] = None,
+    dep_town: Union[int, str] = None,
+    dep_time: time = time(hour=0, minute=0),
+    # arr_time: time = time(hour=0, minute=0),
+    db: Session = Depends(get_db),
+):
+    db_dep_stop = get_stop_by_param(db=db, stop=dep_stop, town=dep_town)
+    db_arr_stop = get_stop_by_param(db=db, stop=arr_stop, town=arr_town)
+    result = find_way(
+        db=db, dep_stop=db_dep_stop, arr_stop=db_arr_stop, dep_time=dep_time
+    )
+    print(result)
+    result = [
+        {
+            "dep": r.rs_t_dep,
+            "arr": r.rs_t_arr,
+            "line": r.busline_name,
+            "desc": r.descript,
+        }
+        for r in result
+    ]
+    return result
